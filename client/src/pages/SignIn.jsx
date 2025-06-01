@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -17,14 +16,18 @@ export default function SignIn() {
 
     const { email, password } = formData;
 
-    
-    const validEmail = 'user@example.com';
-    const validPassword = '123456';
+    // Fetch user from localStorage
+    const storedUser = JSON.parse(localStorage.getItem('authUser'));
 
-    if (email === validEmail && password === validPassword) {
-      localStorage.setItem('authUser', JSON.stringify({ email }));
+    if (!storedUser) {
+      toast.error('No user found. Please sign up first.');
+      return;
+    }
+
+    // Match credentials
+    if (email === storedUser.email && password === storedUser.password) {
       toast.success('Sign in successful!');
-      navigate('/'); 
+      navigate('/'); // Redirect to homepage
     } else {
       toast.error('Invalid email or password.');
     }

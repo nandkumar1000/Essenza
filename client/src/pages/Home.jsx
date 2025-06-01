@@ -1,13 +1,11 @@
-
 import { useEffect, useState } from 'react';
 import { getProducts } from '../services/api';
 import ProductCard from '../components/ProductCard';
 import Banner from '../components/Banner';
-import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-export default function Home() {
+export default function Home({ searchResults = [] }) {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState('All');
@@ -15,6 +13,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem('authUser'));
 
   useEffect(() => {
     getProducts()
@@ -30,6 +29,14 @@ export default function Home() {
         setLoading(false);
       });
   }, []);
+
+  useEffect(() => {
+    if (searchResults.length > 0) {
+      setFilteredProducts(searchResults);
+    } else {
+      setFilteredProducts(products);
+    }
+  }, [searchResults, products]);
 
   const applyFilters = (category = categoryFilter, range = priceRange) => {
     let filtered = [...products];
@@ -71,27 +78,15 @@ export default function Home() {
     applyFilters(categoryFilter, newRange);
   };
 
-  const handleSearch = (term) => {
-    const lowerTerm = term.toLowerCase();
-    const results = products.filter((product) =>
-      product.name.toLowerCase().includes(lowerTerm)
-    );
-
-    if (results.length === 0) {
-      toast.info('No products found for your search. Showing all products.');
-      setFilteredProducts(products);
-    } else {
-      setFilteredProducts(results);
-    }
-  };
-
   if (loading) return <p className="text-center p-8">Loading products...</p>;
   if (error) return <p className="text-center p-8 text-red-600">{error}</p>;
 
   return (
     <div>
-      <Navbar onSearch={handleSearch} />
       <Banner onFilterChange={handleFilterChange} />
+      <div className="p-4">
+        <h1 className="text-2xl font-bold">Welcome, {user?.name || 'Guest'}!</h1>
+      </div>
 
       <section className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {filteredProducts.map((product) => (
